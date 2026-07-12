@@ -1,9 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pencil, Plus, Search, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { Banknote, BriefcaseBusiness, Building2, CarFront, CreditCard, HeartPulse, Home, Pencil, Plus, Search, ShoppingBag, Sparkles, Trash2, TrendingDown, TrendingUp, Utensils, Waves } from 'lucide-react';
+import { Box, Chip, MenuItem, Paper, TextField, Typography } from '@mui/material';
 import { SectionCard } from '../components/SectionCard';
 import type { FinanceState, Transaction, TransactionType } from '../data/financeData';
 import { expenseCategories, incomeCategories } from '../data/financeData';
 import { formatCurrency, formatDate } from '../utils/format';
+
+const categoryIcons: Record<string, typeof Home> = {
+  Food: Utensils,
+  Housing: Home,
+  Transport: CarFront,
+  Utilities: Waves,
+  Shopping: ShoppingBag,
+  Health: HeartPulse,
+  Entertainment: Sparkles,
+  Education: BriefcaseBusiness,
+  Salary: Banknote,
+  Freelance: CreditCard,
+  'Side Hustle': Sparkles,
+  Investment: Building2,
+};
 
 interface TransactionsPageProps {
   state: FinanceState;
@@ -21,6 +37,8 @@ export function TransactionsPage({ state, onAddOrUpdate, onDelete, dark, prefill
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [filter, setFilter] = useState<'all' | TransactionType>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -32,12 +50,14 @@ export function TransactionsPage({ state, onAddOrUpdate, onDelete, dark, prefill
   const visibleTransactions = useMemo(() => {
     return state.transactions
       .filter((transaction) => (filter === 'all' ? true : transaction.type === filter))
+      .filter((transaction) => selectedCategory === 'all' || transaction.category === selectedCategory)
+      .filter((transaction) => selectedMonth === 'all' || new Date(transaction.date).toLocaleDateString('en-US', { month: 'long' }).toLowerCase() === selectedMonth.toLowerCase())
       .filter((transaction) => {
         const haystack = `${transaction.title} ${transaction.category} ${transaction.note}`.toLowerCase();
         return haystack.includes(search.toLowerCase());
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [filter, search, state.transactions]);
+  }, [filter, search, selectedCategory, selectedMonth, state.transactions]);
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -76,90 +96,94 @@ export function TransactionsPage({ state, onAddOrUpdate, onDelete, dark, prefill
     setNote(transaction.note);
   };
 
+  const months = ['all', 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-      <SectionCard title="Manage Transactions" subtitle="Add or edit your financial entries" dark={dark}>
-        <form onSubmit={submit} className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-2 text-sm">
-              <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Type</span>
-              <select value={type} onChange={(event) => { const nextType = event.target.value as TransactionType; setType(nextType); setCategory(nextType === 'income' ? incomeCategories[0] : expenseCategories[0]); }} className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`}>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </label>
-            <label className="space-y-2 text-sm">
-              <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Amount</span>
-              <input value={amount} onChange={(event) => setAmount(event.target.value)} type="number" min="0" className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`} placeholder="0" />
-            </label>
-          </div>
-          <label className="space-y-2 text-sm">
-            <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Title</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`} placeholder="e.g. Freelance payout" />
-          </label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-2 text-sm">
-              <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Category</span>
-              <select value={category} onChange={(event) => setCategory(event.target.value)} className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`}>
-                {(type === 'income' ? incomeCategories : expenseCategories).map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </label>
-            <label className="space-y-2 text-sm">
-              <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Date</span>
-              <input value={date} onChange={(event) => setDate(event.target.value)} type="date" className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`} />
-            </label>
-          </div>
-          <label className="space-y-2 text-sm">
-            <span className={dark ? 'text-slate-300' : 'text-slate-600'}>Note</span>
-            <textarea value={note} onChange={(event) => setNote(event.target.value)} className={`w-full rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`} rows={3} placeholder="Add a note" />
-          </label>
-          <div className="flex flex-wrap gap-3">
-            <button type="submit" className="flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 font-medium text-white">
-              <Plus className="h-4 w-4" /> {editingId ? 'Update' : 'Add'} {type}
-            </button>
-            <button type="button" onClick={resetForm} className={`rounded-2xl px-4 py-3 font-medium ${dark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>Cancel</button>
-          </div>
-        </form>
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xl: '0.95fr 1.05fr' } }}>
+      <SectionCard title="Add transaction" subtitle="Capture income or expenses quickly" dark={dark}>
+        <Box component="form" onSubmit={submit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+            <TextField select label="Type" value={type} onChange={(event) => { const nextType = event.target.value as TransactionType; setType(nextType); setCategory(nextType === 'income' ? incomeCategories[0] : expenseCategories[0]); }} fullWidth>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="expense">Expense</MenuItem>
+            </TextField>
+            <TextField label="Amount" type="number" value={amount} onChange={(event) => setAmount(event.target.value)} fullWidth slotProps={{ htmlInput: { min: 0 } }} />
+          </Box>
+          <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} fullWidth placeholder="e.g. Freelance payout" />
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+            <TextField select label="Category" value={category} onChange={(event) => setCategory(event.target.value)} fullWidth>
+              {(type === 'income' ? incomeCategories : expenseCategories).map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}
+            </TextField>
+            <TextField label="Date" type="date" value={date} onChange={(event) => setDate(event.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+          </Box>
+          <TextField label="Note" value={note} onChange={(event) => setNote(event.target.value)} multiline rows={3} fullWidth placeholder="Add a note" />
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+            <Box component="button" type="submit" style={{ border: 'none', borderRadius: 16, padding: '12px 16px', background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
+              <Plus size={16} /> {editingId ? 'Update' : 'Add'} {type}
+            </Box>
+            <Box component="button" type="button" onClick={resetForm} style={{ border: 'none', borderRadius: 16, padding: '12px 16px', background: dark ? '#111827' : '#f8fafc', color: dark ? '#e2e8f0' : '#334155', fontWeight: 700, cursor: 'pointer' }}>
+              Cancel
+            </Box>
+          </Box>
+        </Box>
       </SectionCard>
 
-      <SectionCard title="Transaction History" subtitle="Search and filter your activity" dark={dark}>
-        <div className="mb-4 flex flex-col gap-3 md:flex-row">
-          <div className={`flex flex-1 items-center gap-2 rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-slate-50'}`}>
-            <Search className="h-4 w-4 text-slate-400" />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search transactions" className={`w-full bg-transparent outline-none ${dark ? 'text-white' : 'text-slate-900'}`} />
-          </div>
-          <select value={filter} onChange={(event) => setFilter(event.target.value as 'all' | TransactionType)} className={`rounded-2xl border px-3 py-3 ${dark ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'}`}>
-            <option value="all">All</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </div>
+      <SectionCard title="Transaction history" subtitle="Search, filter, and manage your activity" dark={dark}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1.5 }}>
+            <TextField placeholder="Search transactions" value={search} onChange={(event) => setSearch(event.target.value)} fullWidth slotProps={{ input: { startAdornment: <Search size={18} style={{ marginRight: 8, color: '#94a3b8' }} /> } }} />
+            <TextField select label="Type" value={filter} onChange={(event) => setFilter(event.target.value as 'all' | TransactionType)} sx={{ minWidth: 140 }}>
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="expense">Expense</MenuItem>
+            </TextField>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+            <TextField select label="Month" value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} sx={{ minWidth: 160 }}>
+              {months.map((month) => <MenuItem key={month} value={month}>{month === 'all' ? 'All months' : month.charAt(0).toUpperCase() + month.slice(1)}</MenuItem>)}
+            </TextField>
+            <TextField select label="Category" value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} sx={{ minWidth: 180 }}>
+              <MenuItem value="all">All categories</MenuItem>
+              {(expenseCategories.concat(incomeCategories)).map((category) => <MenuItem key={category} value={category}>{category}</MenuItem>)}
+            </TextField>
+          </Box>
 
-        <div className="space-y-3">
-          {visibleTransactions.map((transaction) => (
-            <div key={transaction.id} className={`flex flex-col gap-3 rounded-2xl p-3 md:flex-row md:items-center md:justify-between ${dark ? 'bg-slate-800/70' : 'bg-slate-50'}`}>
-              <div className="flex items-center gap-3">
-                <div className={`rounded-full p-2 ${transaction.type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                  {transaction.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                </div>
-                <div>
-                  <p className={`font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{transaction.title}</p>
-                  <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{transaction.category} • {formatDate(transaction.date)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <p className={`font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>{transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, state.currency)}</p>
-                <button onClick={() => startEdit(transaction)} className={`rounded-full p-2 ${dark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-700'}`}>
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button onClick={() => onDelete(transaction.id)} className="rounded-full bg-rose-100 p-2 text-rose-600">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+          {visibleTransactions.length ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {visibleTransactions.map((transaction) => {
+                const Icon = categoryIcons[transaction.category] ?? Sparkles;
+                return (
+                  <Paper key={transaction.id} elevation={0} sx={{ borderRadius: 3, p: 1.6, bgcolor: dark ? '#111827' : '#f8fafc' }}>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', gap: 1.3 }}>
+                      <Box sx={{ display: 'flex', gap: 1.3, alignItems: 'center' }}>
+                        <Box sx={{ p: 1, borderRadius: '50%', bgcolor: transaction.type === 'income' ? '#dcfce7' : '#fee2e2', color: transaction.type === 'income' ? '#16a34a' : '#ef4444' }}>
+                          {transaction.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{transaction.title}</Typography>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Chip label={transaction.category} size="small" icon={<Icon size={14} />} sx={{ bgcolor: dark ? '#1e293b' : '#fff', color: dark ? '#f8fafc' : '#334155' }} />
+                            <Typography variant="caption" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>{formatDate(transaction.date)}</Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: transaction.type === 'income' ? '#16a34a' : '#ef4444' }}>{transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, state.currency)}</Typography>
+                        <Box component="button" onClick={() => startEdit(transaction)} style={{ border: 'none', background: dark ? '#1e293b' : '#fff', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Pencil size={14} /></Box>
+                        <Box component="button" onClick={() => onDelete(transaction.id)} style={{ border: 'none', background: '#fee2e2', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#dc2626' }}><Trash2 size={14} /></Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+                );
+              })}
+            </Box>
+          ) : (
+            <Box sx={{ py: 5, textAlign: 'center', color: dark ? 'text.secondary' : 'text.secondary' }}>
+              <Typography variant="body2">No transactions match your filters yet.</Typography>
+            </Box>
+          )}
+        </Box>
       </SectionCard>
-    </div>
+    </Box>
   );
 }

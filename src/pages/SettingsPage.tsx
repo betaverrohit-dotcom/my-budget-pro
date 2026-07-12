@@ -1,4 +1,5 @@
 import { Moon, RotateCcw, Sun, Wallet2 } from 'lucide-react';
+import { Box, Button, Paper, Switch, Typography } from '@mui/material';
 import { SectionCard } from '../components/SectionCard';
 import type { FinanceState } from '../data/financeData';
 
@@ -11,50 +12,46 @@ interface SettingsPageProps {
 
 export function SettingsPage({ state, onToggleTheme, onResetData, dark }: SettingsPageProps) {
   return (
-    <div className="space-y-6">
-      <SectionCard title="App Preferences" subtitle="Personalize your finance workspace" dark={dark}>
-        <div className="space-y-4">
-          <div className={`flex items-center justify-between rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-slate-50'}`}>
-            <div className="flex items-center gap-3">
-              {dark ? <Moon className="h-5 w-5 text-emerald-600" /> : <Sun className="h-5 w-5 text-amber-600" />}
-              <div>
-                <p className={`font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>Dark Mode</p>
-                <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Switch the interface style</p>
-              </div>
-            </div>
-            <button onClick={onToggleTheme} className={`rounded-full px-4 py-2 text-sm font-medium ${dark ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white'}`}>
-              {dark ? 'Enabled' : 'Disabled'}
-            </button>
-          </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <SectionCard title="App preferences" subtitle="Personalize your workspace" dark={dark}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: dark ? '#111827' : '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1.2, alignItems: 'center' }}>
+              {dark ? <Moon size={18} color="#16a34a" /> : <Sun size={18} color="#f59e0b" />}
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>Dark mode</Typography>
+                <Typography variant="caption" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>Switch the interface style instantly</Typography>
+              </Box>
+            </Box>
+            <Switch checked={dark} onChange={onToggleTheme} color="success" />
+          </Paper>
 
-          <div className={`flex items-center justify-between rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-slate-50'}`}>
-            <div className="flex items-center gap-3">
-              <Wallet2 className="h-5 w-5 text-emerald-600" />
-              <div>
-                <p className={`font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>Currency</p>
-                <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Primary display currency</p>
-              </div>
-            </div>
-            <div className={`rounded-full px-4 py-2 text-sm font-semibold ${dark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-800'}`}>
-              {state.currency}
-            </div>
-          </div>
-        </div>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: dark ? '#111827' : '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1.2, alignItems: 'center' }}>
+              <Wallet2 size={18} color="#16a34a" />
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>Currency</Typography>
+                <Typography variant="caption" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>Primary display currency</Typography>
+              </Box>
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>{state.currency}</Typography>
+          </Paper>
+        </Box>
       </SectionCard>
 
-      <SectionCard title="Data Management" subtitle="Reset your saved budget data" dark={dark}>
-        <div className={`rounded-2xl border border-dashed p-6 ${dark ? 'border-slate-700 bg-slate-800/70' : 'border-slate-200 bg-white'}`}>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className={`font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>Reset application data</p>
-              <p className={`mt-1 text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>This will restore the starter budget data and clear your custom entries.</p>
-            </div>
-            <button onClick={onResetData} className="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 font-medium text-white">
-              <RotateCcw className="h-4 w-4" /> Reset Data
-            </button>
-          </div>
-        </div>
+      <SectionCard title="Data management" subtitle="Reset your saved budget data" dark={dark}>
+        <Paper elevation={0} sx={{ borderRadius: 3, border: `1px dashed ${dark ? '#334155' : '#cbd5e1'}`, p: 2.5, bgcolor: dark ? '#111827' : '#ffffff' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', gap: 1.5 }}>
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 700 }}>Reset application data</Typography>
+              <Typography variant="body2" sx={{ mt: 0.6, color: dark ? 'text.secondary' : 'text.secondary' }}>This restores the starter budget data and clears your custom entries.</Typography>
+            </Box>
+            <Button variant="contained" color="error" startIcon={<RotateCcw size={16} />} onClick={onResetData}>
+              Reset data
+            </Button>
+          </Box>
+        </Paper>
       </SectionCard>
-    </div>
+    </Box>
   );
 }

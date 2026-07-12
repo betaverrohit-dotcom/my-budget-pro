@@ -1,6 +1,6 @@
-import { ArrowDownCircle, ArrowUpCircle, Landmark, PiggyBank, Plus, TrendingUp, Wallet } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Landmark, PiggyBank, Plus, Sparkles, TrendingUp, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { StatCard } from '../components/StatCard';
+import { Box, Fab, Paper, Typography } from '@mui/material';
 import { SectionCard } from '../components/SectionCard';
 import type { FinanceState } from '../data/financeData';
 import { formatCurrency, formatDate } from '../utils/format';
@@ -17,73 +17,98 @@ export function DashboardPage({ state, onAddTransaction, dark }: DashboardPagePr
   const balance = totalIncome - totalExpense;
   const savings = Math.round(balance * 0.35);
   const recentTransactions = [...state.transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  const emiEstimate = Math.round(totalExpense * 0.12);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Wallet} label="Total Balance" value={formatCurrency(balance, state.currency)} accent="bg-emerald-100 text-emerald-700" dark={dark} subtitle="Net balance for this month" />
-        <StatCard icon={ArrowUpCircle} label="Monthly Income" value={formatCurrency(totalIncome, state.currency)} accent="bg-sky-100 text-sky-700" dark={dark} subtitle="All income entries" />
-        <StatCard icon={ArrowDownCircle} label="Monthly Expense" value={formatCurrency(totalExpense, state.currency)} accent="bg-rose-100 text-rose-700" dark={dark} subtitle="Tracked spending" />
-        <StatCard icon={PiggyBank} label="Savings" value={formatCurrency(savings, state.currency)} accent="bg-amber-100 text-amber-700" dark={dark} subtitle="Projected safe reserve" />
-      </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xl: 'row' }, gap: 2 }}>
+        {[
+          { label: 'Total Balance', value: formatCurrency(balance, state.currency), icon: Wallet, color: '#16a34a', subtitle: 'Net balance available' },
+          { label: 'Monthly Income', value: formatCurrency(totalIncome, state.currency), icon: ArrowUpCircle, color: '#0ea5e9', subtitle: 'All income entries' },
+          { label: 'Monthly Expense', value: formatCurrency(totalExpense, state.currency), icon: ArrowDownCircle, color: '#ef4444', subtitle: 'Tracked spending' },
+          { label: 'Savings', value: formatCurrency(savings, state.currency), icon: PiggyBank, color: '#f59e0b', subtitle: 'Projected reserve' },
+        ].map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <motion.div key={item.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }} style={{ flex: 1 }}>
+              <Paper elevation={0} sx={{ borderRadius: 4, p: 2.5, border: `1px solid ${dark ? '#1e293b' : '#e2e8f0'}`, bgcolor: dark ? '#0f172a' : '#ffffff' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>{item.label}</Typography>
+                    <Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{item.value}</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.25, borderRadius: 3, bgcolor: `${item.color}15`, color: item.color }}>
+                    <Icon size={20} />
+                  </Box>
+                </Box>
+                <Typography variant="caption" sx={{ mt: 1.5, color: dark ? 'text.secondary' : 'text.secondary' }}>{item.subtitle}</Typography>
+              </Paper>
+            </motion.div>
+          );
+        })}
+      </Box>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <SectionCard title="Quick Actions" subtitle="Start tracking your money in seconds" dark={dark}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <motion.button whileTap={{ scale: 0.98 }} onClick={() => onAddTransaction('income')} className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-4 font-medium text-white shadow-lg shadow-emerald-600/20">
-              <Plus className="h-4 w-4" /> Add Income
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xl: 'row' }, gap: 3 }}>
+        <SectionCard title="Smart actions" subtitle="Capture money in a tap" dark={dark}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+            <motion.button whileTap={{ scale: 0.98 }} onClick={() => onAddTransaction('income')} style={{ border: 'none', borderRadius: 16, padding: '14px 16px', background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: '0 12px 30px rgba(22, 163, 74, 0.2)' }}>
+              <Plus size={16} /> Add Income
             </motion.button>
-            <motion.button whileTap={{ scale: 0.98 }} onClick={() => onAddTransaction('expense')} className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-4 font-medium text-white shadow-lg shadow-slate-900/20">
-              <TrendingUp className="h-4 w-4" /> Add Expense
+            <motion.button whileTap={{ scale: 0.98 }} onClick={() => onAddTransaction('expense')} style={{ border: 'none', borderRadius: 16, padding: '14px 16px', background: dark ? '#111827' : '#0f172a', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
+              <TrendingUp size={16} /> Add Expense
             </motion.button>
-          </div>
+          </Box>
         </SectionCard>
 
-        <SectionCard title="Recent Transactions" subtitle="Latest activity" dark={dark}>
-          <div className="space-y-3">
-            {recentTransactions.map((item) => (
-              <div key={item.id} className={`flex items-center justify-between rounded-2xl p-3 ${dark ? 'bg-slate-800/70' : 'bg-slate-50'}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-2 ${item.type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                    {item.type === 'income' ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />}
-                  </div>
-                  <div>
-                    <p className={`font-medium ${dark ? 'text-white' : 'text-slate-800'}`}>{item.title}</p>
-                    <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{item.category}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${item.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount, state.currency)}</p>
-                  <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{formatDate(item.date)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <SectionCard title="Recent activity" subtitle="Your latest transactions" dark={dark}>
+          {recentTransactions.length ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {recentTransactions.map((item) => (
+                <Box key={item.id} sx={{ borderRadius: 3, p: 1.5, bgcolor: dark ? '#111827' : '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1.3, alignItems: 'center' }}>
+                    <Box sx={{ p: 1, borderRadius: '50%', bgcolor: item.type === 'income' ? '#dcfce7' : '#fee2e2', color: item.type === 'income' ? '#16a34a' : '#ef4444' }}>
+                      {item.type === 'income' ? <ArrowUpCircle size={16} /> : <ArrowDownCircle size={16} />}
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.title}</Typography>
+                      <Typography variant="caption" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>{item.category}</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: item.type === 'income' ? '#16a34a' : '#ef4444' }}>{item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount, state.currency)}</Typography>
+                    <Typography variant="caption" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>{formatDate(item.date)}</Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{ py: 4, textAlign: 'center', color: dark ? 'text.secondary' : 'text.secondary' }}>
+              <Typography variant="body2">No transactions yet. Add one to start tracking your money.</Typography>
+            </Box>
+          )}
         </SectionCard>
-      </div>
+      </Box>
 
-      <SectionCard title="Monthly Snapshot" subtitle="Spending overview" dark={dark}>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-emerald-50'}`}>
-            <div className="flex items-center gap-2 text-emerald-600">
-              <Landmark className="h-4 w-4" /> <span className="font-semibold">Balance</span>
-            </div>
-            <p className={`mt-3 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(balance, state.currency)}</p>
-          </div>
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-sky-50'}`}>
-            <div className="flex items-center gap-2 text-sky-600">
-              <TrendingUp className="h-4 w-4" /> <span className="font-semibold">Income Growth</span>
-            </div>
-            <p className={`mt-3 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>+12.4%</p>
-          </div>
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-amber-50'}`}>
-            <div className="flex items-center gap-2 text-amber-600">
-              <PiggyBank className="h-4 w-4" /> <span className="font-semibold">Emergency Fund</span>
-            </div>
-            <p className={`mt-3 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(savings, state.currency)}</p>
-          </div>
-        </div>
+      <SectionCard title="Financial snapshot" subtitle="A premium view of your month" dark={dark}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#ecfdf5' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Landmark size={18} color="#16a34a" /><Typography variant="body2" sx={{ fontWeight: 700 }}>Balance</Typography></Box>
+            <Typography variant="h5" sx={{ mt: 1.2, fontWeight: 700 }}>{formatCurrency(balance, state.currency)}</Typography>
+          </Paper>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#eff6ff' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><TrendingUp size={18} color="#0ea5e9" /><Typography variant="body2" sx={{ fontWeight: 700 }}>Income growth</Typography></Box>
+            <Typography variant="h5" sx={{ mt: 1.2, fontWeight: 700 }}>+12.4%</Typography>
+          </Paper>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#fffbeb' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Sparkles size={18} color="#f59e0b" /><Typography variant="body2" sx={{ fontWeight: 700 }}>EMI outlook</Typography></Box>
+            <Typography variant="h5" sx={{ mt: 1.2, fontWeight: 700 }}>{formatCurrency(emiEstimate, state.currency)}</Typography>
+          </Paper>
+        </Box>
       </SectionCard>
-    </div>
+
+      <Fab color="primary" aria-label="add transaction" onClick={() => onAddTransaction('expense')} sx={{ position: 'fixed', right: { xs: 24, md: 40 }, bottom: { xs: 92, md: 40 }, bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}>
+        <Plus />
+      </Fab>
+    </Box>
   );
 }

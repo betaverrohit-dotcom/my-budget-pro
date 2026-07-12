@@ -1,4 +1,5 @@
 import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { Box, Paper, Typography } from '@mui/material';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { SectionCard } from '../components/SectionCard';
 import type { FinanceState } from '../data/financeData';
@@ -31,27 +32,27 @@ export function ReportsPage({ state, dark }: ReportsPageProps) {
   ];
 
   return (
-    <div className="space-y-6">
-      <SectionCard title="Financial Reports" subtitle="Visual overview of your money" dark={dark}>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-emerald-50'}`}>
-            <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Tracked Income</p>
-            <p className={`mt-2 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(state.transactions.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0), state.currency)}</p>
-          </div>
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-sky-50'}`}>
-            <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Tracked Expenses</p>
-            <p className={`mt-2 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(state.transactions.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0), state.currency)}</p>
-          </div>
-          <div className={`rounded-2xl p-4 ${dark ? 'bg-slate-800/70' : 'bg-amber-50'}`}>
-            <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Average Savings</p>
-            <p className={`mt-2 text-2xl font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(12000, state.currency)}</p>
-          </div>
-        </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <SectionCard title="Financial reports" subtitle="A visual overview of your money" dark={dark}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#ecfdf5' }}>
+            <Typography variant="body2" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>Tracked income</Typography>
+            <Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{formatCurrency(state.transactions.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0), state.currency)}</Typography>
+          </Paper>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#eff6ff' }}>
+            <Typography variant="body2" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>Tracked expenses</Typography>
+            <Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{formatCurrency(state.transactions.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0), state.currency)}</Typography>
+          </Paper>
+          <Paper elevation={0} sx={{ flex: 1, p: 2.2, borderRadius: 3, bgcolor: dark ? '#111827' : '#fffbeb' }}>
+            <Typography variant="body2" sx={{ color: dark ? 'text.secondary' : 'text.secondary' }}>Average savings</Typography>
+            <Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{formatCurrency(12000, state.currency)}</Typography>
+          </Paper>
+        </Box>
       </SectionCard>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <SectionCard title="Spending Breakdown" subtitle="Category share" dark={dark} action={<PieChartIcon className="h-5 w-5 text-emerald-600" />}>
-          <div className="h-72">
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xl: 'row' }, gap: 3 }}>
+        <SectionCard title="Spending breakdown" subtitle="Category share" dark={dark} action={<PieChartIcon className="h-5 w-5 text-emerald-600" />}>
+          <Box sx={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={70} outerRadius={110} paddingAngle={2}>
@@ -60,11 +61,11 @@ export function ReportsPage({ state, dark }: ReportsPageProps) {
                 <Tooltip formatter={(value) => formatCurrency(Number(value ?? 0), state.currency)} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </Box>
         </SectionCard>
 
-        <SectionCard title="Monthly Summary" subtitle="Income vs expenses" dark={dark} action={<BarChart3 className="h-5 w-5 text-emerald-600" />}>
-          <div className="h-72">
+        <SectionCard title="Monthly summary" subtitle="Income versus expenses" dark={dark} action={<BarChart3 className="h-5 w-5 text-emerald-600" />}>
+          <Box sx={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={dark ? '#334155' : '#e2e8f0'} />
@@ -75,9 +76,9 @@ export function ReportsPage({ state, dark }: ReportsPageProps) {
                 <Bar dataKey="expense" fill="#f43f5e" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </Box>
         </SectionCard>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
